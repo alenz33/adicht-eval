@@ -23,4 +23,12 @@ COLORS = [
     '#9933cc',
     '#9966cc',
     '#9999cc',
+    '#99cccc',
+    '#99ffcc',
+    '#cc00cc',
+    '#cc33cc',
+    '#cc66cc',
+    '#cc99cc',
+    '#cccccc',
+    '#ccffcc',
 ]
