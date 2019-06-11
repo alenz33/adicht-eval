@@ -4,7 +4,7 @@ from adicht.data import ADichtMatlabFile
 from adicht.display import display_table, display_markdown, display_html
 
 
-def generate_report_raw_data(data_file_path):
+def generate_report(data_file_path):
     data_file = ADichtMatlabFile(data_file_path)
 
     display_markdown('# Raw Data Report\nData file: %s' % data_file_path)
@@ -15,7 +15,7 @@ def generate_report_raw_data(data_file_path):
     report_channel_information(data_file)
     report_marker_information(data_file)
     report_marker_text_information(data_file)
-    report_raw_data_stream(data_file)
+    #report_raw_data_stream(data_file)
 
 
 def report_block_information(data_file):

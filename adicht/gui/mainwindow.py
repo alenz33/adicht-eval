@@ -2,7 +2,7 @@
 
 import os
 
-from PyQt5.QtCore import pyqtSlot, QSettings
+from PyQt5.QtCore import pyqtSlot, QSettings, pyqtSignal, QThread
 from PyQt5.QtWidgets import QMainWindow, QMessageBox, QFileDialog
 from PyQt5.uic import loadUi
 
@@ -11,13 +11,34 @@ from adicht.report import Reporter
 
 UI_DIR = os.path.join(os.path.dirname(__file__), 'ui')
 
+
+class ReportThread(QThread):
+    new_log_message = pyqtSignal(str)
+
+    def __init__(self, output_dir, data_files, parent=None):
+        QThread.__init__(self, parent)
+
+        self._output_dir = output_dir
+        self._data_files = data_files
+
+    def run(self):
+        reporter = Reporter(self._output_dir, self.new_log_message.emit)
+
+        for entry in self._data_files:
+            reporter.generate_report(entry)
+
+
 class MainWindow(QMainWindow):
+    new_log_message = pyqtSignal(str)
+
     def __init__(self, parent=None):
         QMainWindow.__init__(self, parent)
 
         loadUi(os.path.join(UI_DIR, 'mainwindow.ui'), self)
 
+        self._threads = []
         self._load()
+
 
     def append_log(self, msg):
         self.log_output.setHtml(self.log_output.toHtml() + msg)
@@ -48,11 +69,14 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def on_evaluate_button_clicked(self):
-        reporter = Reporter(self.output_directory_edit.text())
+        thread = ReportThread(self.output_directory_edit.text(),
+                              [entry.strip() for entry in self.files_line_edit.text().split(';')])
 
-        for entry in [entry.strip() for entry in self.files_line_edit.text().split(';')]:
-            self.append_log('Start report generation for %s ...' % entry)
-            reporter.generate_report(entry)
+        thread.new_log_message.connect(self.append_log)
+        self._threads.append(thread)
+
+        thread.start()
+
 
     def closeEvent(self, event):
         self._save()
