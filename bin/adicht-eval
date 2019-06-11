@@ -1,0 +1,23 @@
+#!/usr/bin/python3
+
+import sys
+import os
+
+from PyQt5.QtWidgets import QApplication
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
+from adicht.gui.mainwindow import MainWindow
+
+
+def main(args):
+    app = QApplication(args)
+
+    win = MainWindow()
+    win.show()
+
+    return app.exec_()
+
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv))
