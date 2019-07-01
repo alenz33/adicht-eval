@@ -1,7 +1,7 @@
 # coding: utf-8
 
-from adicht.colors import COLORS
-from adicht.evaluation import get_evaluated_stimulations
+from adicht.colors import COLORS, get_random_color
+from adicht.evaluation import get_evaluated_stimulations, STIMULATION_END_MARKER, INTEGRAL_END_MARKER
 
 from IPython.display import Markdown, HTML, display
 from matplotlib import pyplot
@@ -87,7 +87,22 @@ def display_stimulations(data_file):
             pyplot.xlabel('s')
             pyplot.ylabel(channel.unit)
             
-            pyplot.axvline(x=stimulation['max_value'][1], label='Maximum', color='red')
+            pyplot.axvline(x=stimulation['max_value'][1], label='[calc] Maximum', color='red')
+
+            used_colors = []
+            for index, entry in enumerate(stimulation['markers']):
+                if entry.text.lower().strip() not in (
+                    stimulation['from_marker'].text.lower().strip(),
+                    stimulation['to_marker'].text.lower().strip(),
+                    STIMULATION_END_MARKER,
+                    INTEGRAL_END_MARKER,
+                ):
+                    continue
+
+                color = get_random_color(used_colors)
+                pyplot.axvline(x=entry.timed_position, label=entry.text,
+                               color=color)
+                used_colors.append(color)
             
             legend = pyplot.legend(loc='upper right', shadow=True,
                            bbox_to_anchor=(1.3, 1.1))
@@ -95,8 +110,20 @@ def display_stimulations(data_file):
             pyplot.show()
             
             table = [
-                ['Total Duration (s)', 'Maximum Value (%s)' % channel.unit, 'Time of Maximum (s)', 'Full answer (integrated)'],
-                [stimulation['duration'], stimulation['max_value'][0], stimulation['max_value'][1], stimulation['full_answer_integrated']]
+                [
+                    'Total Duration (s)',
+                    'Maximum Value (%s)' % channel.unit,
+                    'Time of Maximum (s)',
+                    'Stimulation answer (integrated)',
+                    'Full answer (integrated)',
+                ],
+                [
+                    stimulation['duration'],
+                    stimulation['max_value'][0],
+                    stimulation['max_value'][1],
+                    stimulation['stimulation_answer_integrated'],
+                    stimulation['full_answer_integrated'],
+                ]
             ]
             
             display_table(table)

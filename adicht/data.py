@@ -56,6 +56,9 @@ class Marker(object):
     def timed_position(self):
         """Read only access to the marker time defined by position and tick rate."""
         return self._timed_position
+
+    def apply_time_offest(self, offset):
+        self._timed_position -= offset
     
     def _generate_time_information(self):
         self._timed_position = self.position / self._tickrate

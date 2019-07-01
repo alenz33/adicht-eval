@@ -1,5 +1,7 @@
 # coding: utf-8
 
+import random
+
 COLORS = [
     '#0000cc',
     '#0033cc',
@@ -32,3 +34,9 @@ COLORS = [
     '#cccccc',
     '#ccffcc',
 ]
+
+def get_random_color(already_used_ones=None):
+    if already_used_ones is None:
+        already_used_ones = []
+
+    return random.choice(COLORS)
