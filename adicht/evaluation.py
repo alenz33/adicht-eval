@@ -80,6 +80,7 @@ def get_evaluated_stimulations(channel):
     
     for entry in stimulations:
         max_val_index = numpy.argmax(entry['data'][0])
+        entry['integral_end_time'] = numpy.nan
         entry['duration'] = entry['to_marker'].timed_position - entry['from_marker'].timed_position
 
         full_answer_data, full_answer_integrated = get_stimulation_integral(entry,
@@ -94,6 +95,7 @@ def get_evaluated_stimulations(channel):
 
         if full_answer_data is not None:
             max_val_index = numpy.argmax(full_answer_data[0])
+            entry['integral_end_time'] = get_integral_end_marker(entry)[0].timed_position
 
         entry['max_value'] = entry['data'][..., max_val_index]
 

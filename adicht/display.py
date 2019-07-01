@@ -114,13 +114,15 @@ def display_stimulations(data_file):
                     'Total Duration (s)',
                     'Maximum Value (%s)' % channel.unit,
                     'Time of Maximum (s)',
-                    'Stimulation answer (integrated)',
-                    'Full answer (integrated)',
+                    'Time of Integral End (s)',
+                    'Stimulation Answer (Integrated)',
+                    'Full Answer (Integrated)',
                 ],
                 [
                     stimulation['duration'],
                     stimulation['max_value'][0],
                     stimulation['max_value'][1],
+                    stimulation['integral_end_time'],
                     stimulation['stimulation_answer_integrated'],
                     stimulation['full_answer_integrated'],
                 ]
