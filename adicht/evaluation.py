@@ -94,7 +94,6 @@ def get_evaluated_stimulations(channel):
 
         if full_answer_data is not None:
             max_val_index = numpy.argmax(full_answer_data[0])
-            print('%s + %s' % (max_val_index, int(entry['from_marker'].timed_position)))
 
         entry['max_value'] = entry['data'][..., max_val_index]
 
