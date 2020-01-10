@@ -2,10 +2,11 @@
 
 import re
 import copy
+from enum import Enum
 
 import numpy
 from scipy.interpolate import interp1d
-from scipy.integrate import simps
+from scipy.integrate import simps, cumtrapz
 
 
 STIMULATION_END_MARKER = 'stim ende'
@@ -15,6 +16,11 @@ MARKER_PATTERNS = [
         re.compile(entry)
         for entry in ['el. stim.*', '(.*?)ser(.*)', '(.*?)ser(.*)']
         ]
+
+class IntegralReference:
+    TO_START = 0
+    TO_BASELINE = 1
+
 
 def extract_stimulations(channel):
     delimiter_markers = [
@@ -57,7 +63,7 @@ def get_integral_end_marker(stimulation):
     ) or None
 
 
-def get_stimulation_integral(stimulation, from_marker_text, to_marker_text, relative_to_baseline=False):
+def get_stimulation_integral(stimulation, from_marker_text, to_marker_text, reference=IntegralReference.TO_START):
     from_marker = list(
         filter(lambda marker: marker.text.lower().strip() == from_marker_text.lower().strip(), stimulation['markers'])
     )
@@ -73,19 +79,23 @@ def get_stimulation_integral(stimulation, from_marker_text, to_marker_text, rela
 
     integration_data = stimulation['data'][..., from_pos:to_pos]
 
-    result = simps(integration_data[0], integration_data[1])
+    #result = numpy.sum(integration_data[0])#cumtrapz(integration_data[0], integration_data[1])
 
-    if relative_to_baseline:
-        start = integration_data[..., from_pos]
-        end = integration_data[..., to_pos-1]
+    full_integral = numpy.sum(integration_data[0])
 
+    start = integration_data[..., from_pos]
+    end = integration_data[..., to_pos - 1]
+
+    if reference == IntegralReference.TO_BASELINE:
         x = integration_data[1]
         slope = (end[0] - start[0]) / (end[1] - start[1])
         y = slope * (x - start[1]) + start[0]
 
-        result = result - simps(y, x)
+        substraction = numpy.sum(y)
+    else:
+        substraction = numpy.sum(numpy.full((1, len(integration_data[0])), start[0]))
 
-    return integration_data, result
+    return integration_data, (full_integral - substraction)
 
 
 def get_evaluated_stimulations(channel):
@@ -98,7 +108,7 @@ def get_evaluated_stimulations(channel):
 
         full_answer_data, full_answer_integrated = get_stimulation_integral(entry,
                                                                           entry['from_marker'].text,
-                                                                          INTEGRAL_END_MARKER, relative_to_baseline=True)
+                                                                          INTEGRAL_END_MARKER, reference=IntegralReference.TO_BASELINE)
         stimulation_answer_data, stimulation_answer_integrated = get_stimulation_integral(entry,
                                                                                         entry['from_marker'].text,
                                                                                         STIMULATION_END_MARKER)
