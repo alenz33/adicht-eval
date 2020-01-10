@@ -78,10 +78,11 @@ def get_stimulation_integral(stimulation, from_marker_text, to_marker_text, refe
     to_pos = numpy.where(stimulation['data'][1] == to_marker[0].timed_position)[0][0]
 
     integration_data = stimulation['data'][..., from_pos:to_pos]
+    import pprint;pprint.pprint(integration_data)
 
     #result = numpy.sum(integration_data[0])#cumtrapz(integration_data[0], integration_data[1])
 
-    full_integral = numpy.sum(integration_data[0])
+    full_integral = simps(integration_data[0], integration_data[1])
 
     start = integration_data[..., from_pos]
     end = integration_data[..., to_pos - 1]
@@ -91,9 +92,9 @@ def get_stimulation_integral(stimulation, from_marker_text, to_marker_text, refe
         slope = (end[0] - start[0]) / (end[1] - start[1])
         y = slope * (x - start[1]) + start[0]
 
-        substraction = numpy.sum(y)
+        substraction = simps(y, x)
     else:
-        substraction = numpy.sum(numpy.full((1, len(integration_data[0])), start[0]))
+        substraction = simps(numpy.full((1, len(integration_data[0])), start[0])[0], integration_data[1])
 
     return integration_data, (full_integral - substraction)
 
