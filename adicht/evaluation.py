@@ -78,9 +78,6 @@ def get_stimulation_integral(stimulation, from_marker_text, to_marker_text, refe
     to_pos = numpy.where(stimulation['data'][1] == to_marker[0].timed_position)[0][0]
 
     integration_data = stimulation['data'][..., from_pos:to_pos]
-    import pprint;pprint.pprint(integration_data)
-
-    #result = numpy.sum(integration_data[0])#cumtrapz(integration_data[0], integration_data[1])
 
     full_integral = simps(integration_data[0], integration_data[1])
 
