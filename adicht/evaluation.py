@@ -4,6 +4,7 @@ import re
 import copy
 
 import numpy
+from scipy.interpolate import interp1d
 from scipy.integrate import simps
 
 
@@ -56,7 +57,7 @@ def get_integral_end_marker(stimulation):
     ) or None
 
 
-def get_stimulation_integral(stimulation, from_marker_text, to_marker_text):
+def get_stimulation_integral(stimulation, from_marker_text, to_marker_text, relative_to_baseline=False):
     from_marker = list(
         filter(lambda marker: marker.text.lower().strip() == from_marker_text.lower().strip(), stimulation['markers'])
     )
@@ -72,7 +73,19 @@ def get_stimulation_integral(stimulation, from_marker_text, to_marker_text):
 
     integration_data = stimulation['data'][..., from_pos:to_pos]
 
-    return integration_data, simps(integration_data[0], integration_data[1])
+    result = simps(integration_data[0], integration_data[1])
+
+    if relative_to_baseline:
+        start = integration_data[..., from_pos]
+        end = integration_data[..., to_pos-1]
+
+        x = integration_data[1]
+        slope = (end[0] - start[0]) / (end[1] - start[1])
+        y = slope * (x - start[1]) + start[0]
+
+        result = result - simps(y, x)
+
+    return integration_data, result
 
 
 def get_evaluated_stimulations(channel):
@@ -85,7 +98,7 @@ def get_evaluated_stimulations(channel):
 
         full_answer_data, full_answer_integrated = get_stimulation_integral(entry,
                                                                           entry['from_marker'].text,
-                                                                          INTEGRAL_END_MARKER)
+                                                                          INTEGRAL_END_MARKER, relative_to_baseline=True)
         stimulation_answer_data, stimulation_answer_integrated = get_stimulation_integral(entry,
                                                                                         entry['from_marker'].text,
                                                                                         STIMULATION_END_MARKER)
